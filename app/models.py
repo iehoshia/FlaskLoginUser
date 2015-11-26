@@ -7,6 +7,7 @@ from flask.ext.login import LoginManager, UserMixin, current_user, login_user, l
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(64), index=True, unique=True)
+    password = db.Column(db.String(64), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     about_me = db.Column(db.String(140))
@@ -37,14 +38,6 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
-class UserNotFoundError(Exception):
-    pass
-
-# Flask-Login use this to reload the user object from the user ID stored in the session
-#@login_manager.user_loader
-#def load_user(id):
-#    return User.get(id)
-
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,12 +48,16 @@ class Post(db.Model):
     def __repr__(self):
         return '<Post %r>' % (self.body)
 
+class UserNotFoundError(Exception):
+    pass
+
 class UserDb(UserMixin):
     '''Simple User class'''
     USERS = {
         # username: password
         'john': 'john',
-        'mary': 'mary'
+        'mary': 'mary',
+        'tere': 'tere'
     }
 
     def __init__(self, id):
@@ -76,9 +73,3 @@ class UserDb(UserMixin):
             return self_class(id)
         except UserNotFoundError:
             return None
-
-    def get_id(self):
-        try:
-            return unicode(self.id)  # python 2
-        except NameError:
-            return str(self.id)  # python 3
