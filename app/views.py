@@ -7,31 +7,30 @@ from app import app, db, lm, oid
 from .forms import LoginForm, EditForm
 from .models import User, UserDb
 
-'''
+
 @lm.user_loader
 def load_user(id):
-    return UserDb.query.get(int(id))
+    return UserDb.get(id)
 
 @app.before_request
 def before_request():
     g.user = current_user
     if g.user.is_authenticated:
         g.user.last_seen = datetime.utcnow()
-        db.session.add(g.user)
-        db.session.commit()
-'''
+        #db.session.add(g.user)
+        #db.session.commit()
 
 # Flask-Login use this to reload the user object from the user ID stored in the session
-@lm.user_loader
-def load_user(id):
-    return UserDb.get(id)
+#@lm.user_loader
+#def load_user(id):
+#    return UserDb.get(id)
 
 
 @app.route('/')
 @app.route('/index')
 @login_required
 def index():
-    user = current_user.get_id() or 'Guess'
+    user = g.user.get_id() or 'Guess'
     posts = [
         {
             'author': {'nickname': 'John'},
@@ -51,7 +50,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    if current_user is not None and  current_user.is_authenticated:
+    if g.user is not None and  g.user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
